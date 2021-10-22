@@ -370,12 +370,19 @@ class LocalPackage extends Package implements ILocalPackage {
                 if (unzipDirErr || deployDirError) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 } else {
-                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
-                        if (copyError) {
-                            cleanDeployCallback(copyError, null);
-                        } else {
-                            cleanDeployCallback(null, { deployDir, isDiffUpdate: false });
-                        }
+                    LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled: LocalPackage) => {
+                        FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError: Error, oldPackage: DirectoryEntry) => {
+                            FileUtil.copyDirectoryEntriesTo(oldPackage, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
+                                FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
+
+                                    if (copyError) {
+                                        cleanDeployCallback(copyError, null);
+                                    } else {
+                                        cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+                                    }
+                                });
+                            });
+                        });
                     });
                 }
             });
