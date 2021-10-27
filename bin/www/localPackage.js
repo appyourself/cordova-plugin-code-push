@@ -317,20 +317,19 @@ alert('trzymaj kciuki');
 
 
                     var success = (currentPackageDirectory) => {
-                        alert('my path: ' + currentPackageDirectory.fullPath);
 
-                        alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
+                        //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
                         FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
-                            alert('cos zwrocilo');
 
                             FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
-                                alert('nawet tu jestesmy');
-                                if (copyError) {
+                                alert('co to boedzie co to bedzie');
+                                if (copyError2) {
                                     alert('copyError2');
-                                    alert(JSON.stringify(copyError2));
+                                    alert("copyError2" + copyError2.message);
                                     cleanDeployCallback(copyError, null);
                                 } else {
+                                    alert('huraaaaa');
                                     cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
                                 }
                             });
@@ -346,9 +345,9 @@ alert('trzymaj kciuki');
 
 FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
 
-/*
 
-                        LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
+
+                       /* LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
                             FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError, oldPackage) => {
                                 if(deployDirError) {
                                     alert('deployDirError');
@@ -372,8 +371,8 @@ FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(suc
                         }, (err) => {
                             alert('err');
                             alert(err.message);
-                        });
-*/
+                        });*/
+
 
 
 
