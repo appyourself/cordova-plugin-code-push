@@ -314,6 +314,20 @@ var LocalPackage = (function (_super) {
 
                     })*/
 alert('trzymaj kciuki');
+
+
+                    var success = (currentPackageDirectory) => {
+                        alert('my path: ' + currentPackageDirectory);
+                    };
+
+                    var fail = (fileSystemError) => {
+                        alert('my path error: ' + fileSystemError.message);
+                    };
+
+
+FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
+
+
                         LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
                             FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError, oldPackage) => {
                                 if(deployDirError) {
