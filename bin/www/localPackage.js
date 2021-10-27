@@ -317,7 +317,7 @@ alert('trzymaj kciuki');
 
 
                     var success = (currentPackageDirectory) => {
-                        alert('my path: ' + currentPackageDirectory);
+                        alert('my path: ' + currentPackageDirectory.fullPath);
                     };
 
                     var fail = (fileSystemError) => {
