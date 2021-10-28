@@ -320,6 +320,17 @@ alert('trzymaj kciuki');
 FileUtil.getDataDirectory(currentPackageDirectory.fullPath + "/wwww", true, () => {
 
 
+    var directoryReader = currentPackageDirectory.createReader();
+    directoryReader.readEntries((entries) => {
+        var i = 0;
+        while(i < entries.length) {
+            alert('name: ' + entries[i].name);
+            alert('full path: ' + entries[i].fullPath);
+            i++;
+        }
+    }, ()=> {
+        alert('nie dobrze');
+    });
     //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
     FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
