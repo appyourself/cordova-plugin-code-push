@@ -317,23 +317,27 @@ alert('trzymaj kciuki');
 
 
                     var success = (currentPackageDirectory) => {
+FileUtil.getDataDirectory(currentPackageDirectory + "/wwww", true, () => {
 
-                        //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
-                        FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
+    //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
-                            FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
-                                alert('co to boedzie co to bedzie');
-                                if (copyError2) {
-                                    alert('copyError2');
-                                    alert("copyError2" + copyError2.message);
-                                    cleanDeployCallback(copyError, null);
-                                } else {
-                                    alert('huraaaaa');
-                                    cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
-                                }
-                            });
-                        });
+    FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
+
+        FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+            alert('co to boedzie co to bedzie');
+            if (copyError2) {
+                alert('copyError2');
+                alert("copyError2" + copyError2.message);
+                cleanDeployCallback(copyError, null);
+            } else {
+                alert('huraaaaa');
+                cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+            }
+        });
+    });
+
+});
 
 
                     };
