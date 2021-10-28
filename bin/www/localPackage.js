@@ -335,7 +335,7 @@ alert('trzymaj kciuki');
 
                                     FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
                                         alert('co to boedzie co to bedzie');
-                                        var directoryReader2 = copyTo.createReader();
+                                        var directoryReader2 = deployDir.createReader();
                                         directoryReader2.readEntries((entries) => {
                                             var i = 0;
                                             while(i < entries.length) {
