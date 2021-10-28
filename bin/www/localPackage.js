@@ -324,38 +324,44 @@ alert('trzymaj kciuki');
                                 directoryReader.readEntries((entries) => {
                                     var i = 0;
                                     while(i < entries.length) {
-                                        alert('name: ' + entries[i].name);
+                                        alert('Po skopiowaniu name: ' + entries[i].name);
                                         alert('full path: ' + entries[i].fullPath);
                                         i++;
                                     }
+
+
+
+
+
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+                                        alert('co to boedzie co to bedzie');
+                                        var directoryReader2 = copyTo.createReader();
+                                        directoryReader2.readEntries((entries) => {
+                                            var i = 0;
+                                            while(i < entries.length) {
+                                                alert('Deployniete name: ' + entries[i].name);
+                                                alert('full path: ' + entries[i].fullPath);
+                                                i++;
+                                            }
+                                        }, ()=> {
+                                            alert('nie dobrze');
+                                        });
+                                        if (copyError2) {
+                                            alert('copyError2');
+                                            alert("copyError2" + copyError2.message);
+                                            cleanDeployCallback(copyError, null);
+                                        } else {
+                                            alert('huraaaaa');
+                                            cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+                                        }
+                                    });
+
+
                                 }, ()=> {
                                     alert('nie dobrze');
                                 });
-                                alert('deployowanie');
-                                alert('deployowanie');
-                                alert('deployowanie');
-                                FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
-                                    alert('co to boedzie co to bedzie');
-                                    var directoryReader = copyTo.createReader();
-                                    directoryReader.readEntries((entries) => {
-                                        var i = 0;
-                                        while(i < entries.length) {
-                                            alert('name: ' + entries[i].name);
-                                            alert('full path: ' + entries[i].fullPath);
-                                            i++;
-                                        }
-                                    }, ()=> {
-                                        alert('nie dobrze');
-                                    });
-                                    if (copyError2) {
-                                        alert('copyError2');
-                                        alert("copyError2" + copyError2.message);
-                                        cleanDeployCallback(copyError, null);
-                                    } else {
-                                        alert('huraaaaa');
-                                        cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
-                                    }
-                                });
+
+
                             });
                         });
 
