@@ -318,35 +318,50 @@ alert('trzymaj kciuki');
 
                     var success = (currentPackageDirectory) => {
 
-
+                        FileUtil.getDataDirectory(deployDir.fullPath + '/www', true, (copyTo) => {
+                            FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [/*no need to ignore copy anything*/], (copyError1) => {
+                                var directoryReader = copyTo.createReader();
+                                directoryReader.readEntries((entries) => {
+                                    var i = 0;
+                                    while(i < entries.length) {
+                                        alert('name: ' + entries[i].name);
+                                        alert('full path: ' + entries[i].fullPath);
+                                        i++;
+                                    }
+                                }, ()=> {
+                                    alert('nie dobrze');
+                                });
+                                alert('deployowanie');
+                                alert('deployowanie');
+                                alert('deployowanie');
+                                FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+                                    alert('co to boedzie co to bedzie');
+                                    var directoryReader = copyTo.createReader();
+                                    directoryReader.readEntries((entries) => {
+                                        var i = 0;
+                                        while(i < entries.length) {
+                                            alert('name: ' + entries[i].name);
+                                            alert('full path: ' + entries[i].fullPath);
+                                            i++;
+                                        }
+                                    }, ()=> {
+                                        alert('nie dobrze');
+                                    });
+                                    if (copyError2) {
+                                        alert('copyError2');
+                                        alert("copyError2" + copyError2.message);
+                                        cleanDeployCallback(copyError, null);
+                                    } else {
+                                        alert('huraaaaa');
+                                        cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+                                    }
+                                });
+                            });
+                        });
 
     //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
-    FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
 
-        FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
-            alert('co to boedzie co to bedzie');
-            var directoryReader = deployDir.createReader();
-            directoryReader.readEntries((entries) => {
-                var i = 0;
-                while(i < entries.length) {
-                    alert('name: ' + entries[i].name);
-                    alert('full path: ' + entries[i].fullPath);
-                    i++;
-                }
-            }, ()=> {
-                alert('nie dobrze');
-            });
-            if (copyError2) {
-                alert('copyError2');
-                alert("copyError2" + copyError2.message);
-                cleanDeployCallback(copyError, null);
-            } else {
-                alert('huraaaaa');
-                cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
-            }
-        });
-    });
 
 
 
