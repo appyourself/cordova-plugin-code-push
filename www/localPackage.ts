@@ -374,7 +374,7 @@ class LocalPackage extends Package implements ILocalPackage {
                         FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError: Error, oldPackage: DirectoryEntry) => {
                             FileUtil.copyDirectoryEntriesTo(oldPackage, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
                                 FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
-
+alert('clean deployment!!');
                                     if (copyError) {
                                         cleanDeployCallback(copyError, null);
                                     } else {
