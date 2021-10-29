@@ -191,7 +191,7 @@ var LocalPackage = (function (_super) {
             errorCallback(new Error("Unable to compute hash for package: " + error));
         };
         CodePushUtil.logMessage("Verifying hash for folder path: " + deployDir.fullPath);
-        packageHashSuccess();
+        successCallback();
         //cordova.exec(packageHashSuccess, packageHashFail, "CodePush", "getPackageHash", [deployDir.fullPath]);
     };
     LocalPackage.prototype.verifySignature = function (deployDir, newUpdateHash, publicKey, signature, errorCallback, successCallback) {
