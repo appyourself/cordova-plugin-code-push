@@ -393,7 +393,7 @@ class LocalPackage extends Package implements ILocalPackage {
                                             cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
                                         }
                                     });
-                                }, ["config.js"]);
+                                }, ["config.js", "cordova.js", "cordova_plugins.js", "plugins"]);
                             }
 
                         });

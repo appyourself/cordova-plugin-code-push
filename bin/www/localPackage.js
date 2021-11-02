@@ -327,7 +327,7 @@ var LocalPackage = (function (_super) {
                                             cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
                                         }
                                     });
-                                }, ["config.js"]);
+                                }, ["config.js", "cordova.js", "cordova_plugins.js", "plugins"]);
                             }
                         });
                     };
