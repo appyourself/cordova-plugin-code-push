@@ -31,7 +31,7 @@ public class UpdateHashUtils {
             "cordova.js",
             "onfig.js",
             "cordova_plugins.js",
-            "plugins",
+            "plugins"
     ));
 
     public static String getBinaryHash(Activity activity) throws IOException, NoSuchAlgorithmException, ClassNotFoundException {
