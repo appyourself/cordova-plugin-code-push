@@ -252,7 +252,7 @@ class CodePush implements CodePushCordovaPlugin {
      */
     public sync(syncCallback?: SuccessCallback<any>, syncOptions?: SyncOptions, downloadProgress?: SuccessCallback<DownloadProgress>, syncErrback?: ErrorCallback): void {
         /* Check if a sync is already in progress */
-        return;
+        alert("sync start");
         if (CodePush.SyncInProgress) {
             /* A sync is already in progress */
             CodePushUtil.logMessage("Sync already in progress.");
