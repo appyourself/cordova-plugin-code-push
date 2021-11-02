@@ -318,7 +318,7 @@ alert('trzymaj kciuki');
 
                     var success = (currentPackageDirectory) => {
 
-                        FileUtil.getDataDirectory(deployDir.fullPath + '/www', true, (error, copyTo) => {
+                        FileUtil.getDataDirectory(deployDir.fullPath + '/www', true, (copyTo) => {
                             FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [/*no need to ignore copy anything*/], (copyError1) => {
                                 var directoryReader = copyTo.createReader();
                                 directoryReader.readEntries((entries) => {
