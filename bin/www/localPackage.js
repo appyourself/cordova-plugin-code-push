@@ -335,9 +335,6 @@ alert('trzymaj kciuki');
                                     });
                                 });
                             });
-                        }, (err) => {
-                            alert('err');
-                            alert(JSON.stringify(err));
                         });
 
 
