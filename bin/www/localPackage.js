@@ -356,7 +356,7 @@ alert('trzymaj kciuki');
 
 
                             });
-
+                        });
 
     //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
 
