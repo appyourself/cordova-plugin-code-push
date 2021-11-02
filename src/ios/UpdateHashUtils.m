@@ -8,10 +8,10 @@
             @".codepushrelease",
             @".DS_Store",
             @"__MACOSX",
-            "cordova.js",
-            "onfig.js",
-            "cordova_plugins.js",
-            "plugins"
+            @"cordova.js",
+            @"config.js",
+            @"cordova_plugins.js",
+            @"plugins"
     ];
 }
 

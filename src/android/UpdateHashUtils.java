@@ -29,7 +29,7 @@ public class UpdateHashUtils {
             ".DS_Store",
             "__MACOSX",
             "cordova.js",
-            "onfig.js",
+            "config.js",
             "cordova_plugins.js",
             "plugins"
     ));
