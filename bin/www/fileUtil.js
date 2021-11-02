@@ -95,7 +95,7 @@ var FileUtil = (function () {
     FileUtil.dataDirectoryExists = function (path, callback) {
         FileUtil.directoryExists(cordova.file.dataDirectory, path, callback);
     };
-    FileUtil.copyDirectoryEntriesTo = function (sourceDir, destinationDir, ignoreList, callback) {
+    FileUtil.copyDirectoryEntriesTo = function (sourceDir, destinationDir, ignoreList, callback, whiteList) {
         if (ignoreList.indexOf(".DS_Store") === -1) {
             ignoreList.push(".DS_Store");
         }
@@ -110,7 +110,7 @@ var FileUtil = (function () {
             var copyOne = function () {
                 if (i < entries.length) {
                     var nextEntry = entries[i++];
-                    if (ignoreList.indexOf(nextEntry.name) > 0) {
+                    if (ignoreList.indexOf(nextEntry.name) > 0 || (whiteList && (whiteList.indexOf(nextEntry.name) === -1))) {
                         copyOne();
                     }
                     else {

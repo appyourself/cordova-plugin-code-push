@@ -285,7 +285,9 @@ class LocalPackage extends Package implements ILocalPackage {
                                 /* invoke success before navigating */
                                 installSuccess && installSuccess(installModeToUse);
                                 /* no need for callbacks, the javascript context will reload */
-                                cordova.exec(() => { }, () => { }, "CodePush", "install",
+                                cordova.exec(() => {
+                                    }, () => {
+                                    }, "CodePush", "install",
                                     [
                                         deployDir.fullPath,
                                         installModeToUse.toString(),
@@ -293,8 +295,12 @@ class LocalPackage extends Package implements ILocalPackage {
                                     ]
                                 );
                             } else {
-                                cordova.exec(() => { installSuccess && installSuccess(installModeToUse); },
-                                    () => { installError && installError(); }, "CodePush", "install",
+                                cordova.exec(() => {
+                                        installSuccess && installSuccess(installModeToUse);
+                                    },
+                                    () => {
+                                        installError && installError();
+                                    }, "CodePush", "install",
                                     [
                                         deployDir.fullPath,
                                         installModeToUse.toString(),
@@ -330,7 +336,7 @@ class LocalPackage extends Package implements ILocalPackage {
                     LocalPackage.handleDiffDeployment(newPackageLocation, diffManifest, deployCallback);
                 } else {
                     LocalPackage.handleCleanDeployment(newPackageLocation, (error: Error) => {
-                        deployCallback(error, { deployDir, isDiffUpdate: false });
+                        deployCallback(error, {deployDir, isDiffUpdate: false});
                     });
                 }
             });
@@ -370,13 +376,35 @@ class LocalPackage extends Package implements ILocalPackage {
                 if (unzipDirErr || deployDirError) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 } else {
-                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
-                        if (copyError) {
-                            cleanDeployCallback(copyError, null);
-                        } else {
-                            cleanDeployCallback(null, { deployDir, isDiffUpdate: false });
-                        }
-                    });
+
+                    var success = (currentPackageDirectory: DirectoryEntry) => {
+                        var newDeployDirectoryPath = LocalPackage.VersionsDir + "/" + deployDir.name + "/www";
+
+                        FileUtil.getDataDirectory(newDeployDirectoryPath, true, (error, copyTo) => {
+                            if (error) {
+                                cleanDeployCallback(new Error("Could not copy new package: " + error.message), null);
+                            }
+                            else{
+                                FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], (copyError1) => {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+                                        if (copyError2) {
+                                            cleanDeployCallback(copyError2, null);
+                                        } else {
+                                            cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+                                        }
+                                    });
+                                }, ["config.js"]);
+                            }
+
+                        });
+                    };
+
+
+                    var fail = (fileSystemError: Error) => {
+                        cleanDeployCallback(new Error("Could not copy new package: "  + fileSystemError.message), null);
+                    };
+
+                    FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
                 }
             });
         });
@@ -449,7 +477,7 @@ class LocalPackage extends Package implements ILocalPackage {
                                 if (deleteError || deployDirError) {
                                     handleError(new Error("Cannot clean up deleted manifest files."));
                                 } else {
-                                    diffCallback(null, { deployDir, isDiffUpdate: true });
+                                    diffCallback(null, {deployDir, isDiffUpdate: true});
                                 }
                             });
                         });
@@ -460,10 +488,10 @@ class LocalPackage extends Package implements ILocalPackage {
     }
 
     /**
-    * Writes the given local package information to the current package information file.
-    * @param packageInfoMetadata The object to serialize.
-    * @param callback In case of an error, this function will be called with the error as the fist parameter.
-    */
+     * Writes the given local package information to the current package information file.
+     * @param packageInfoMetadata The object to serialize.
+     * @param callback In case of an error, this function will be called with the error as the fist parameter.
+     */
     public static writeCurrentPackageInformation(packageInfoMetadata: IPackageInfoMetadata, callback: Callback<void>): void {
         var content = JSON.stringify(packageInfoMetadata);
         FileUtil.writeStringToDataFile(content, LocalPackage.RootDir, LocalPackage.PackageInfoFile, true, callback);

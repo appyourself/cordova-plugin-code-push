@@ -232,14 +232,20 @@ var LocalPackage = (function (_super) {
                             var installModeToUse = _this.isMandatory ? installOptions.mandatoryInstallMode : installOptions.installMode;
                             if (installModeToUse === InstallMode.IMMEDIATE) {
                                 installSuccess && installSuccess(installModeToUse);
-                                cordova.exec(function () { }, function () { }, "CodePush", "install", [
+                                cordova.exec(function () {
+                                }, function () {
+                                }, "CodePush", "install", [
                                     deployDir.fullPath,
                                     installModeToUse.toString(),
                                     installOptions.minimumBackgroundDuration.toString()
                                 ]);
                             }
                             else {
-                                cordova.exec(function () { installSuccess && installSuccess(installModeToUse); }, function () { installError && installError(); }, "CodePush", "install", [
+                                cordova.exec(function () {
+                                    installSuccess && installSuccess(installModeToUse);
+                                }, function () {
+                                    installError && installError();
+                                }, "CodePush", "install", [
                                     deployDir.fullPath,
                                     installModeToUse.toString(),
                                     installOptions.minimumBackgroundDuration.toString()
@@ -305,14 +311,30 @@ var LocalPackage = (function (_super) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 }
                 else {
-                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError) {
-                        if (copyError) {
-                            cleanDeployCallback(copyError, null);
-                        }
-                        else {
-                            cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
-                        }
-                    });
+                    var success = function (currentPackageDirectory) {
+                        var newDeployDirectoryPath = LocalPackage.VersionsDir + "/" + deployDir.name + "/www";
+                        FileUtil.getDataDirectory(newDeployDirectoryPath, true, function (error, copyTo) {
+                            if (error) {
+                                cleanDeployCallback(new Error("Could not copy new package: " + error.message), null);
+                            }
+                            else {
+                                FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], function (copyError1) {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError2) {
+                                        if (copyError2) {
+                                            cleanDeployCallback(copyError2, null);
+                                        }
+                                        else {
+                                            cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
+                                        }
+                                    });
+                                }, ["config.js"]);
+                            }
+                        });
+                    };
+                    var fail = function (fileSystemError) {
+                        cleanDeployCallback(new Error("Could not copy new package: " + fileSystemError.message), null);
+                    };
+                    FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
                 }
             });
         });
