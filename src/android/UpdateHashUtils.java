@@ -27,7 +27,11 @@ public class UpdateHashUtils {
     private static final Set<String> ignoredFiles = new HashSet<String>(Arrays.asList(
             ".codepushrelease",
             ".DS_Store",
-            "__MACOSX"
+            "__MACOSX",
+            "cordova.js",
+            "onfig.js",
+            "cordova_plugins.js",
+            "plugins",
     ));
 
     public static String getBinaryHash(Activity activity) throws IOException, NoSuchAlgorithmException, ClassNotFoundException {

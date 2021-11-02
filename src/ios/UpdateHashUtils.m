@@ -7,7 +7,11 @@
     return @[
             @".codepushrelease",
             @".DS_Store",
-            @"__MACOSX"
+            @"__MACOSX",
+            "cordova.js",
+            "onfig.js",
+            "cordova_plugins.js",
+            "plugins"
     ];
 }
 
