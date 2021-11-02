@@ -314,7 +314,7 @@ var LocalPackage = (function (_super) {
 
                     })*/
 alert('trzymaj kciuki');
-                        LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
+                        LocalPackage.getPackage(LocalPackage.OldPackageInfoFile, (localPackageCurrentInstalled) => {
                             FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError, oldPackage) => {
                                 if(deployDirError) {
                                     alert('deployDirError');
