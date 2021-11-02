@@ -317,7 +317,7 @@ alert('trzymaj kciuki');
 
 
                     var success = (currentPackageDirectory) => {
-FileUtil.getDataDirectory(currentPackageDirectory.fullPath + "/wwww", true, () => {
+FileUtil.getDataDirectory(currentPackageDirectory + "/wwww", true, () => {
 
 
     //alert('kopiowanko powinno byc z ' + currentPackageDirectory.fullPath + ' do ' + deployDir.fullPath);
