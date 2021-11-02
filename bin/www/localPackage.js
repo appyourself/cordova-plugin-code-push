@@ -316,18 +316,10 @@ var LocalPackage = (function (_super) {
 
                         LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
                             FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError, oldPackage) => {
-                                if(deployDirError) {
-                                    alert('deployDirError');
-                                    alert(JSON.stringify(deployDirError));
-                                }
-                                FileUtil.copyDirectoryEntriesTo(oldPackage, deployDir, [/*no need to ignore copy anything*/], (copyError1) => {
-                                    alert('copyError1');
-                                    alert(JSON.stringify(copyError1));
-                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+                                FileUtil.copyDirectoryEntriesTo(oldPackage, deployDir, [/*no need to ignore copy anything*/], (copyError) => {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError) => {
 
                                         if (copyError) {
-                                            alert('copyError2');
-                                            alert(JSON.stringify(copyError2));
                                             cleanDeployCallback(copyError, null);
                                         } else {
                                             cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
