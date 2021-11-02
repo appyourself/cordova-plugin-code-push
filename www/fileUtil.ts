@@ -243,7 +243,6 @@ class FileUtil {
                             entry.remove(continueDeleting, fail);
                         };
 
-                        alert("usuwanko: " + filesToDelete[i]);
                         rootDir.getFile(filesToDelete[i], { create: false, exclusive: false }, success, fail);
                     } else {
                         callback(null, null);
