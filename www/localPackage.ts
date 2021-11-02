@@ -443,12 +443,7 @@ class LocalPackage extends Package implements ILocalPackage {
                     if (error || currentPackageError || cleanDeployError) {
                         handleError(new Error("Cannot perform diff-update."));
                     } else {
-                        var whiteList: string[] = ["config.js"];
                         var manifest: IDiffManifest = JSON.parse(content);
-                        manifest.deletedFiles = manifest.deletedFiles.filter((item: string) => {
-                            return !whiteList.includes(item);
-                        });
-
                         FileUtil.deleteEntriesFromDataDirectory(newPackageLocation, manifest.deletedFiles, (deleteError: Error) => {
                             FileUtil.getDataDirectory(newPackageLocation, true, (deployDirError: Error, deployDir: DirectoryEntry) => {
                                 if (deleteError || deployDirError) {
