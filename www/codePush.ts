@@ -148,83 +148,21 @@ class CodePush implements CodePushCordovaPlugin {
      * @param queryError Optional callback invoked in case of an error.
      * @param deploymentKey Optional deployment key that overrides the config.xml setting.
      */
-    public checkForUpdate(querySuccess: SuccessCallback<RemotePackage>, queryError?: ErrorCallback, deploymentKey?: string): void {
-        try {
-            var callback: Callback<RemotePackage | NativeUpdateNotification> = (error: Error, remotePackageOrUpdateNotification: IRemotePackage | NativeUpdateNotification) => {
-                if (error) {
-                    CodePushUtil.invokeErrorCallback(error, queryError);
-                }
-                else {
-                    var appUpToDate = () => {
-                        CodePushUtil.logMessage("App is up to date.");
-                        querySuccess && querySuccess(null);
-                    };
-
-                    if (remotePackageOrUpdateNotification) {
-                        if ((<NativeUpdateNotification>remotePackageOrUpdateNotification).updateAppVersion) {
-                            /* There is an update available for a different version. In the current version of the plugin, we treat that as no update. */
-                            CodePushUtil.logMessage("An update is available, but it is targeting a newer binary version than you are currently running.");
-                            appUpToDate();
-                        } else {
-                            /* There is an update available for the current version. */
-                            var remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
-                            NativeAppInfo.isFailedUpdate(remotePackage.packageHash, (installFailed: boolean) => {
-                                var result: RemotePackage = new RemotePackage();
-                                result.appVersion = remotePackage.appVersion;
-                                result.deploymentKey = deploymentKey; // server does not send back the deployment key
-                                result.description = remotePackage.description;
-                                result.downloadUrl = remotePackage.downloadUrl;
-                                result.isMandatory = remotePackage.isMandatory;
-                                result.label = remotePackage.label;
-                                result.packageHash = remotePackage.packageHash;
-                                result.packageSize = remotePackage.packageSize;
-                                result.failedInstall = installFailed;
-                                CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
-                                querySuccess && querySuccess(result);
-                            });
-                        }
-                    }
-                    else {
-                        appUpToDate();
-                    }
-                }
-            };
-
-            var queryUpdate = () => {
-                Sdk.getAcquisitionManager((initError: Error, acquisitionManager: AcquisitionManager) => {
-                    if (initError) {
-                        CodePushUtil.invokeErrorCallback(initError, queryError);
-                    } else {
-                        LocalPackage.getCurrentOrDefaultPackage((localPackage: LocalPackage) => {
-                            NativeAppInfo.getApplicationVersion((appVersionError: Error, currentBinaryVersion: string) => {
-                                if (!appVersionError) {
-                                     localPackage.appVersion = currentBinaryVersion;
-                                }
-                                CodePushUtil.logMessage("Checking for update.");
-                                acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
-                            });
-                        }, (error: Error) => {
-                            CodePushUtil.invokeErrorCallback(error, queryError);
-                        });
-                    }
-                }, deploymentKey);
-            };
-
-            if (deploymentKey) {
-                queryUpdate();
-            } else {
-                NativeAppInfo.getDeploymentKey((deploymentKeyError: Error, defaultDeploymentKey: string) => {
-                    if (deploymentKeyError) {
-                        CodePushUtil.invokeErrorCallback(deploymentKeyError, queryError);
-                    } else {
-                        deploymentKey = defaultDeploymentKey;
-                        queryUpdate();
-                    }
-                });
+    public checkForUpdate(querySuccess: SuccessCallback<RemotePackage>, queryError?: ErrorCallback, appVersion?: string, downloadUrl?: string): void {
+            try {
+                var result = new RemotePackage();
+                result.appVersion = appVersion;
+                result.downloadUrl = downloadUrl;
+                result.isMandatory = true;
+                result.label = appVersion;
+                result.failedInstall = false;
+                CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
+                querySuccess && querySuccess(result);
             }
-        } catch (e) {
-            CodePushUtil.invokeErrorCallback(new Error("An error occurred while querying for updates." + CodePushUtil.getErrorMessage(e)), queryError);
-        }
+            catch (e) {
+                CodePushUtil.invokeErrorCallback(new Error("An error occurred while querying for updates." + CodePushUtil.getErrorMessage(e)), queryError);
+            }
+
     }
 
     /**

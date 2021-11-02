@@ -90,66 +90,7 @@ var LocalPackage = (function (_super) {
         }
     };
     LocalPackage.prototype.verifyPackage = function (deploymentResult, installError, successCallback) {
-        var _this = this;
-        var deployDir = deploymentResult.deployDir;
-        var verificationFail = function (error) {
-            installError && installError(error);
-        };
-        var verify = function (isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature) {
-            if (isSignatureVerificationEnabled) {
-                if (isSignatureAppearedInBundle) {
-                    _this.verifyHash(deployDir, _this.packageHash, verificationFail, function () {
-                        _this.verifySignature(deployDir, _this.packageHash, publicKey, signature, verificationFail, successCallback);
-                    });
-                }
-                else {
-                    var errorMessage = "Error! Public key was provided but there is no JWT signature within app bundle to verify. " +
-                        "Possible reasons, why that might happen: \n" +
-                        "1. You've been released CodePush bundle update using version of CodePush CLI that is not support code signing.\n" +
-                        "2. You've been released CodePush bundle update without providing --privateKeyPath option.";
-                    installError && installError(new Error(errorMessage));
-                }
-            }
-            else {
-                if (isSignatureAppearedInBundle) {
-                    CodePushUtil.logMessage("Warning! JWT signature exists in codepush update but code integrity check couldn't be performed because there is no public key configured. " +
-                        "Please ensure that public key is properly configured within your application.");
-                    _this.verifyHash(deployDir, _this.packageHash, verificationFail, successCallback);
-                }
-                else {
-                    if (deploymentResult.isDiffUpdate) {
-                        _this.verifyHash(deployDir, _this.packageHash, verificationFail, successCallback);
-                    }
-                    else {
-                        successCallback();
-                    }
-                }
-            }
-        };
-        if (deploymentResult.isDiffUpdate) {
-            CodePushUtil.logMessage("Applying diff update");
-        }
-        else {
-            CodePushUtil.logMessage("Applying full update");
-        }
-        var isSignatureVerificationEnabled, isSignatureAppearedInBundle;
-        var publicKey;
-        this.getPublicKey(function (error, publicKeyResult) {
-            if (error) {
-                installError && installError(new Error("Error reading public key. " + error));
-                return;
-            }
-            publicKey = publicKeyResult;
-            isSignatureVerificationEnabled = !!publicKey;
-            _this.getSignatureFromUpdate(deploymentResult.deployDir, function (error, signature) {
-                if (error) {
-                    installError && installError(new Error("Error reading signature from update. " + error));
-                    return;
-                }
-                isSignatureAppearedInBundle = !!signature;
-                verify(isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature);
-            });
-        });
+        successCallback();
     };
     LocalPackage.prototype.getPublicKey = function (callback) {
         var success = function (publicKey) {

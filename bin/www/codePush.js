@@ -82,79 +82,16 @@ var CodePush = (function () {
             }
         });
     };
-    CodePush.prototype.checkForUpdate = function (querySuccess, queryError, deploymentKey) {
+    CodePush.prototype.checkForUpdate = function (querySuccess, queryError, appVersion, downloadUrl) {
         try {
-            var callback = function (error, remotePackageOrUpdateNotification) {
-                if (error) {
-                    CodePushUtil.invokeErrorCallback(error, queryError);
-                }
-                else {
-                    var appUpToDate = function () {
-                        CodePushUtil.logMessage("App is up to date.");
-                        querySuccess && querySuccess(null);
-                    };
-                    if (remotePackageOrUpdateNotification) {
-                        if (remotePackageOrUpdateNotification.updateAppVersion) {
-                            CodePushUtil.logMessage("An update is available, but it is targeting a newer binary version than you are currently running.");
-                            appUpToDate();
-                        }
-                        else {
-                            var remotePackage = remotePackageOrUpdateNotification;
-                            NativeAppInfo.isFailedUpdate(remotePackage.packageHash, function (installFailed) {
-                                var result = new RemotePackage();
-                                result.appVersion = remotePackage.appVersion;
-                                result.deploymentKey = deploymentKey;
-                                result.description = remotePackage.description;
-                                result.downloadUrl = remotePackage.downloadUrl;
-                                result.isMandatory = remotePackage.isMandatory;
-                                result.label = remotePackage.label;
-                                result.packageHash = remotePackage.packageHash;
-                                result.packageSize = remotePackage.packageSize;
-                                result.failedInstall = installFailed;
-                                CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
-                                querySuccess && querySuccess(result);
-                            });
-                        }
-                    }
-                    else {
-                        appUpToDate();
-                    }
-                }
-            };
-            var queryUpdate = function () {
-                Sdk.getAcquisitionManager(function (initError, acquisitionManager) {
-                    if (initError) {
-                        CodePushUtil.invokeErrorCallback(initError, queryError);
-                    }
-                    else {
-                        LocalPackage.getCurrentOrDefaultPackage(function (localPackage) {
-                            NativeAppInfo.getApplicationVersion(function (appVersionError, currentBinaryVersion) {
-                                if (!appVersionError) {
-                                    localPackage.appVersion = currentBinaryVersion;
-                                }
-                                CodePushUtil.logMessage("Checking for update.");
-                                acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
-                            });
-                        }, function (error) {
-                            CodePushUtil.invokeErrorCallback(error, queryError);
-                        });
-                    }
-                }, deploymentKey);
-            };
-            if (deploymentKey) {
-                queryUpdate();
-            }
-            else {
-                NativeAppInfo.getDeploymentKey(function (deploymentKeyError, defaultDeploymentKey) {
-                    if (deploymentKeyError) {
-                        CodePushUtil.invokeErrorCallback(deploymentKeyError, queryError);
-                    }
-                    else {
-                        deploymentKey = defaultDeploymentKey;
-                        queryUpdate();
-                    }
-                });
-            }
+            var result = new RemotePackage();
+            result.appVersion = appVersion;
+            result.downloadUrl = downloadUrl;
+            result.isMandatory = true;
+            result.label = appVersion;
+            result.failedInstall = false;
+            CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
+            querySuccess && querySuccess(result);
         }
         catch (e) {
             CodePushUtil.invokeErrorCallback(new Error("An error occurred while querying for updates." + CodePushUtil.getErrorMessage(e)), queryError);
