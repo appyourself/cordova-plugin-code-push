@@ -337,7 +337,7 @@ alert('trzymaj kciuki');
                             });
                         }, (err) => {
                             alert('err');
-                            alert(err.message);
+                            alert(JSON.stringify(err));
                         });
 
 
