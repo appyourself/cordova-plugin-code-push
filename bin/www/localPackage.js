@@ -313,7 +313,7 @@ var LocalPackage = (function (_super) {
                         }
 
                     })*/
-//alert('trzymaj kciuki');
+alert('trzymaj kciuki');
 
 
                     var success = (currentPackageDirectory) => {
@@ -322,7 +322,7 @@ var LocalPackage = (function (_super) {
                             FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [/*no need to ignore copy anything*/], (copyError1) => {
 
                                     FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
-                                        /*alert('co to boedzie co to bedzie');
+                                        alert('co to boedzie co to bedzie');
                                         var directoryReader2 = deployDir.createReader();
                                         directoryReader2.readEntries((entries) => {
                                             var i = 0;
@@ -333,13 +333,13 @@ var LocalPackage = (function (_super) {
                                             }
                                         }, ()=> {
                                             alert('nie dobrze');
-                                        });*/
+                                        });
                                         if (copyError2) {
                                             alert('copyError2');
                                             alert("copyError2" + copyError2.message);
                                             cleanDeployCallback(copyError, null);
                                         } else {
-                                         //   alert('huraaaaa');
+                                            alert('huraaaaa');
                                             cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
                                         }
                                     });
