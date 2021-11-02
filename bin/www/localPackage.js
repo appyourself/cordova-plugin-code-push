@@ -321,12 +321,17 @@ alert('trzymaj kciuki');
                         FileUtil.getDataDirectory(LocalPackage.VersionsDir + "/" + deployDir.name + '/www', true, (error, copyTo) => {
                             FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [/*no need to ignore copy anything*/], (copyError1) => {
 
+
+
+
+
+
                                     FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
                                         alert('co to boedzie co to bedzie');
-                                        var directoryReader2 = deployDir.createReader();
+                                        var directoryReader2 = copyTo.createReader();
                                         directoryReader2.readEntries((entries) => {
                                             var i = 0;
-                                            while(i < 50) {
+                                            while(i < entries.length) {
                                                 alert('Deployniete name: ' + entries[i].name);
                                                 alert('full path: ' + entries[i].fullPath);
                                                 i++;
