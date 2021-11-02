@@ -126,7 +126,7 @@ class FileUtil {
             ignoreList.push("__MACOSX");
         }
 
-        ignoreList.push("www/plugins");
+        ignoreList.push("plugins");
         ignoreList.push("config.js");
         ignoreList.push("cordova_plugins.js");
         ignoreList.push("cordova.js");
@@ -162,9 +162,9 @@ class FileUtil {
                             } else {
                                 /* file */
                                 var fileEntry = <FileEntry>destinationEntry;
-                               // fileEntry.remove(() => {
+                                fileEntry.remove(() => {
                                     nextEntry.copyTo(destinationDir, nextEntry.name, copyOne, fail);
-                                //}, replaceError);
+                                }, replaceError);
                             }
                         };
 
