@@ -126,11 +126,6 @@ class FileUtil {
             ignoreList.push("__MACOSX");
         }
 
-        ignoreList.push("plugins");
-        ignoreList.push("config.js");
-        ignoreList.push("cordova_plugins.js");
-        ignoreList.push("cordova.js");
-
         var fail = (error: FileError) => {
             callback(FileUtil.fileErrorToError(error), null);
         };
