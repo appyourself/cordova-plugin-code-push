@@ -305,32 +305,14 @@ var LocalPackage = (function (_super) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 }
                 else {
-                   /* FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError) {
+                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError) {
                         if (copyError) {
                             cleanDeployCallback(copyError, null);
-                        } else {
-                            cleanDeployCallback(null, {deployDir: deployDir, isDiffUpdate: false});
                         }
-
-                    })*/
-
-                        LocalPackage.getPackage(LocalPackage.PackageInfoFile, (localPackageCurrentInstalled) => {
-                            FileUtil.getDataDirectory(localPackageCurrentInstalled.localPath, true, (deployDirError, oldPackage) => {
-                                FileUtil.copyDirectoryEntriesTo(oldPackage, deployDir, [/*no need to ignore copy anything*/], (copyError) => {
-                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError) => {
-
-                                        if (copyError) {
-                                            cleanDeployCallback(copyError, null);
-                                        } else {
-                                            cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
-                                        }
-                                    });
-                                });
-                            });
-                        });
-
-
-
+                        else {
+                            cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
+                        }
+                    });
                 }
             });
         });
