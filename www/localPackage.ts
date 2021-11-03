@@ -64,7 +64,7 @@ class LocalPackage extends Package implements ILocalPackage {
                 Sdk.reportStatusDeploy(this, AcquisitionStatus.DeploymentFailed, this.deploymentKey);
             };
 
-            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash + "/" + this.packageHash;
+            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash;
 
             var newPackageUnzipped = function (unzipError: Error) {
                 if (unzipError) {
