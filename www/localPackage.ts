@@ -64,7 +64,7 @@ class LocalPackage extends Package implements ILocalPackage {
                 Sdk.reportStatusDeploy(this, AcquisitionStatus.DeploymentFailed, this.deploymentKey);
             };
 
-            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash;
+            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash + "/" + this.packageHash;
 
             var newPackageUnzipped = function (unzipError: Error) {
                 if (unzipError) {
@@ -388,7 +388,7 @@ class LocalPackage extends Package implements ILocalPackage {
                             }
                             else{
                                 FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], (copyError1) => {
-                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError2) => {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, copyTo, [/*no need to ignore copy anything*/], (copyError2) => {
                                         if (copyError2) {
                                             cleanDeployCallback(copyError2, null);
                                         } else {

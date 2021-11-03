@@ -264,7 +264,7 @@ interface CodePushCordovaPlugin {
      * @param queryError Optional callback invoked in case of an error.
      * @param deploymentKey Optional deployment key that overrides the config.xml setting.
      */
-    checkForUpdate(querySuccess: SuccessCallback<IRemotePackage>, queryError?: ErrorCallback, deploymentKey?: string): void;
+    checkForUpdate(querySuccess: SuccessCallback<IRemotePackage>, queryError?: ErrorCallback, appVersion?: string, downloadUrl?: string): void;
 
     /**
      * Notifies the plugin that the update operation succeeded and that the application is ready.

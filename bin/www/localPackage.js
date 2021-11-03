@@ -45,7 +45,7 @@ var LocalPackage = (function (_super) {
                 CodePushUtil.invokeErrorCallback(error, errorCallback);
                 Sdk.reportStatusDeploy(_this, AcquisitionStatus.DeploymentFailed, _this.deploymentKey);
             };
-            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash;
+            var newPackageLocation = LocalPackage.VersionsDir + "/" + this.packageHash + "/" + this.packageHash;
             var newPackageUnzipped = function (unzipError) {
                 if (unzipError) {
                     installError && installError(new Error("Could not unzip package" + CodePushUtil.getErrorMessage(unzipError)));
@@ -260,7 +260,7 @@ var LocalPackage = (function (_super) {
                             }
                             else {
                                 FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], function (copyError1) {
-                                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError2) {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, copyTo, [], function (copyError2) {
                                         if (copyError2) {
                                             cleanDeployCallback(copyError2, null);
                                         }

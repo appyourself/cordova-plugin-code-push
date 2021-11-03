@@ -89,6 +89,7 @@ var CodePush = (function () {
             result.downloadUrl = downloadUrl;
             result.isMandatory = true;
             result.label = appVersion;
+            result.packageHash = appVersion;
             result.failedInstall = false;
             CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
             querySuccess && querySuccess(result);
