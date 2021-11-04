@@ -66,21 +66,22 @@ class RemotePackage extends Package implements IRemotePackage {
 
                 const onFileReady: FileSaverCompletionHandler = (fileEntry: FileEntry) => {
                     this.isDownloading = false;
-
+                    NativeAppInfo.isFailedUpdate(this.packageHash, (installFailed: boolean) => {
                     fileEntry.file((file: File) => {
-                            var localPackage = new LocalPackage();
-                            localPackage.description = this.description;
-                            localPackage.label = this.label;
-                            localPackage.appVersion = this.appVersion;
-                            localPackage.isMandatory = this.isMandatory;
-                            localPackage.packageHash = this.packageHash;
-                            localPackage.isFirstRun = false;
-                            localPackage.failedInstall = false;
-                            localPackage.localPath = fileEntry.toInternalURL();
+                        var localPackage = new LocalPackage();
+                        localPackage.description = this.description;
+                        localPackage.label = this.label;
+                        localPackage.appVersion = this.appVersion;
+                        localPackage.isMandatory = this.isMandatory;
+                        localPackage.packageHash = this.packageHash;
+                        localPackage.isFirstRun = false;
+                        localPackage.failedInstall = installFailed;
+                        localPackage.localPath = fileEntry.toInternalURL();
 
-                            CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
-                            successCallback && successCallback(localPackage);
+                        CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
+                        successCallback && successCallback(localPackage);
                     }, fileError => onFileError(fileError, "READ_FILE"));
+                });
                 };
 
                 const filedir = cordova.file.dataDirectory + LocalPackage.DownloadDir + "/";

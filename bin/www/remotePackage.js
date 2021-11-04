@@ -24,6 +24,7 @@ var __extends = (this && this.__extends) || (function () {
 var LocalPackage = require("./localPackage");
 var Package = require("./package");
 var FileUtil = require("./fileUtil");
+var NativeAppInfo = require("./nativeAppInfo");
 var CodePushUtil = require("./codePushUtil");
 var RemotePackage = (function (_super) {
     __extends(RemotePackage, _super);
@@ -54,19 +55,21 @@ var RemotePackage = (function (_super) {
                 };
                 var onFileReady = function (fileEntry) {
                     _this.isDownloading = false;
-                    fileEntry.file(function (file) {
-                        var localPackage = new LocalPackage();
-                        localPackage.description = _this.description;
-                        localPackage.label = _this.label;
-                        localPackage.appVersion = _this.appVersion;
-                        localPackage.isMandatory = _this.isMandatory;
-                        localPackage.packageHash = _this.packageHash;
-                        localPackage.isFirstRun = false;
-                        localPackage.failedInstall = false;
-                        localPackage.localPath = fileEntry.toInternalURL();
-                        CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
-                        successCallback && successCallback(localPackage);
-                    }, function (fileError) { return onFileError_1(fileError, "READ_FILE"); });
+                    NativeAppInfo.isFailedUpdate(_this.packageHash, function (installFailed) {
+                        fileEntry.file(function (file) {
+                            var localPackage = new LocalPackage();
+                            localPackage.description = _this.description;
+                            localPackage.label = _this.label;
+                            localPackage.appVersion = _this.appVersion;
+                            localPackage.isMandatory = _this.isMandatory;
+                            localPackage.packageHash = _this.packageHash;
+                            localPackage.isFirstRun = false;
+                            localPackage.failedInstall = installFailed;
+                            localPackage.localPath = fileEntry.toInternalURL();
+                            CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
+                            successCallback && successCallback(localPackage);
+                        }, function (fileError) { return onFileError_1(fileError, "READ_FILE"); });
+                    });
                 };
                 var filedir = cordova.file.dataDirectory + LocalPackage.DownloadDir + "/";
                 var filename = LocalPackage.PackageUpdateFileName;
