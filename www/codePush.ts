@@ -62,54 +62,9 @@ class CodePush implements CodePushCordovaPlugin {
      * !!! This function is called from the native side, please make changes accordingly. !!!
      */
     public reportStatus(status: number, label: string, appVersion: string, deploymentKey: string, previousLabelOrAppVersion?: string, previousDeploymentKey?: string) {
-       if (((!label && appVersion === previousLabelOrAppVersion) || label === previousLabelOrAppVersion)
-           && deploymentKey === previousDeploymentKey) {
-           // No-op since the new appVersion and label is exactly the same as the previous
-           // (the app might have been updated via a direct or HockeyApp deployment).
-           return;
-       }
-
-       var createPackageForReporting = (label: string, appVersion: string): IPackage => {
-            return {
-                /* The SDK only reports the label and appVersion.
-                   The rest of the properties are added for type safety. */
-                label, appVersion, deploymentKey,
-                description: null, isMandatory: false,
-                packageHash: null, packageSize: null,
-                failedInstall: false
-            };
-        };
-
-        var reportDone = (error: Error) => {
-            var reportArgs = {
-                status,
-                label,
-                appVersion,
-                deploymentKey,
-                previousLabelOrAppVersion,
-                previousDeploymentKey
-            };
-
-            if (error) {
-                CodePushUtil.logError(`An error occurred while reporting status: ${JSON.stringify(reportArgs)}`, error);
-                cordova.exec(null, null, "CodePush", "reportFailed", [reportArgs]);
-            } else {
-                CodePushUtil.logMessage(`Reported status: ${JSON.stringify(reportArgs)}`);
-                cordova.exec(null, null, "CodePush", "reportSucceeded", [reportArgs]);
-            }
-        };
-
-        switch (status) {
-            case ReportStatus.STORE_VERSION:
-                Sdk.reportStatusDeploy(null, AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_CONFIRMED:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_ROLLED_BACK:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentFailed, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-        }
+        /*
+        We don't use server.
+        */
     }
 
     /**
@@ -148,83 +103,22 @@ class CodePush implements CodePushCordovaPlugin {
      * @param queryError Optional callback invoked in case of an error.
      * @param deploymentKey Optional deployment key that overrides the config.xml setting.
      */
-    public checkForUpdate(querySuccess: SuccessCallback<RemotePackage>, queryError?: ErrorCallback, deploymentKey?: string): void {
-        try {
-            var callback: Callback<RemotePackage | NativeUpdateNotification> = (error: Error, remotePackageOrUpdateNotification: IRemotePackage | NativeUpdateNotification) => {
-                if (error) {
-                    CodePushUtil.invokeErrorCallback(error, queryError);
-                }
-                else {
-                    var appUpToDate = () => {
-                        CodePushUtil.logMessage("App is up to date.");
-                        querySuccess && querySuccess(null);
-                    };
-
-                    if (remotePackageOrUpdateNotification) {
-                        if ((<NativeUpdateNotification>remotePackageOrUpdateNotification).updateAppVersion) {
-                            /* There is an update available for a different version. In the current version of the plugin, we treat that as no update. */
-                            CodePushUtil.logMessage("An update is available, but it is targeting a newer binary version than you are currently running.");
-                            appUpToDate();
-                        } else {
-                            /* There is an update available for the current version. */
-                            var remotePackage: RemotePackage = <RemotePackage>remotePackageOrUpdateNotification;
-                            NativeAppInfo.isFailedUpdate(remotePackage.packageHash, (installFailed: boolean) => {
-                                var result: RemotePackage = new RemotePackage();
-                                result.appVersion = remotePackage.appVersion;
-                                result.deploymentKey = deploymentKey; // server does not send back the deployment key
-                                result.description = remotePackage.description;
-                                result.downloadUrl = remotePackage.downloadUrl;
-                                result.isMandatory = remotePackage.isMandatory;
-                                result.label = remotePackage.label;
-                                result.packageHash = remotePackage.packageHash;
-                                result.packageSize = remotePackage.packageSize;
-                                result.failedInstall = installFailed;
-                                CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
-                                querySuccess && querySuccess(result);
-                            });
-                        }
-                    }
-                    else {
-                        appUpToDate();
-                    }
-                }
-            };
-
-            var queryUpdate = () => {
-                Sdk.getAcquisitionManager((initError: Error, acquisitionManager: AcquisitionManager) => {
-                    if (initError) {
-                        CodePushUtil.invokeErrorCallback(initError, queryError);
-                    } else {
-                        LocalPackage.getCurrentOrDefaultPackage((localPackage: LocalPackage) => {
-                            NativeAppInfo.getApplicationVersion((appVersionError: Error, currentBinaryVersion: string) => {
-                                if (!appVersionError) {
-                                     localPackage.appVersion = currentBinaryVersion;
-                                }
-                                CodePushUtil.logMessage("Checking for update.");
-                                acquisitionManager.queryUpdateWithCurrentPackage(localPackage, callback);
-                            });
-                        }, (error: Error) => {
-                            CodePushUtil.invokeErrorCallback(error, queryError);
-                        });
-                    }
-                }, deploymentKey);
-            };
-
-            if (deploymentKey) {
-                queryUpdate();
-            } else {
-                NativeAppInfo.getDeploymentKey((deploymentKeyError: Error, defaultDeploymentKey: string) => {
-                    if (deploymentKeyError) {
-                        CodePushUtil.invokeErrorCallback(deploymentKeyError, queryError);
-                    } else {
-                        deploymentKey = defaultDeploymentKey;
-                        queryUpdate();
-                    }
-                });
+    public checkForUpdate(querySuccess: SuccessCallback<RemotePackage>, queryError?: ErrorCallback, appVersion?: string, downloadUrl?: string): void {
+            try {
+                var result = new RemotePackage();
+                result.appVersion = appVersion;
+                result.downloadUrl = downloadUrl;
+                result.isMandatory = true;
+                result.label = appVersion;
+                result.packageHash = appVersion;
+                result.failedInstall = false;
+                CodePushUtil.logMessage("An update is available. " + JSON.stringify(result));
+                querySuccess && querySuccess(result);
             }
-        } catch (e) {
-            CodePushUtil.invokeErrorCallback(new Error("An error occurred while querying for updates." + CodePushUtil.getErrorMessage(e)), queryError);
-        }
+            catch (e) {
+                CodePushUtil.invokeErrorCallback(new Error("An error occurred while querying for updates." + CodePushUtil.getErrorMessage(e)), queryError);
+            }
+
     }
 
     /**

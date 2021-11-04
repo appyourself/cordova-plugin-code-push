@@ -26,7 +26,6 @@ var Package = require("./package");
 var FileUtil = require("./fileUtil");
 var NativeAppInfo = require("./nativeAppInfo");
 var CodePushUtil = require("./codePushUtil");
-var Sdk = require("./sdk");
 var RemotePackage = (function (_super) {
     __extends(RemotePackage, _super);
     function RemotePackage() {
@@ -56,10 +55,9 @@ var RemotePackage = (function (_super) {
                 };
                 var onFileReady = function (fileEntry) {
                     _this.isDownloading = false;
-                    fileEntry.file(function (file) {
-                        NativeAppInfo.isFailedUpdate(_this.packageHash, function (installFailed) {
+                    NativeAppInfo.isFailedUpdate(_this.packageHash, function (installFailed) {
+                        fileEntry.file(function (file) {
                             var localPackage = new LocalPackage();
-                            localPackage.deploymentKey = _this.deploymentKey;
                             localPackage.description = _this.description;
                             localPackage.label = _this.label;
                             localPackage.appVersion = _this.appVersion;
@@ -70,9 +68,8 @@ var RemotePackage = (function (_super) {
                             localPackage.localPath = fileEntry.toInternalURL();
                             CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
                             successCallback && successCallback(localPackage);
-                            Sdk.reportStatusDownload(localPackage, localPackage.deploymentKey);
-                        });
-                    }, function (fileError) { return onFileError_1(fileError, "READ_FILE"); });
+                        }, function (fileError) { return onFileError_1(fileError, "READ_FILE"); });
+                    });
                 };
                 var filedir = cordova.file.dataDirectory + LocalPackage.DownloadDir + "/";
                 var filename = LocalPackage.PackageUpdateFileName;

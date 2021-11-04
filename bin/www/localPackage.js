@@ -90,66 +90,7 @@ var LocalPackage = (function (_super) {
         }
     };
     LocalPackage.prototype.verifyPackage = function (deploymentResult, installError, successCallback) {
-        var _this = this;
-        var deployDir = deploymentResult.deployDir;
-        var verificationFail = function (error) {
-            installError && installError(error);
-        };
-        var verify = function (isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature) {
-            if (isSignatureVerificationEnabled) {
-                if (isSignatureAppearedInBundle) {
-                    _this.verifyHash(deployDir, _this.packageHash, verificationFail, function () {
-                        _this.verifySignature(deployDir, _this.packageHash, publicKey, signature, verificationFail, successCallback);
-                    });
-                }
-                else {
-                    var errorMessage = "Error! Public key was provided but there is no JWT signature within app bundle to verify. " +
-                        "Possible reasons, why that might happen: \n" +
-                        "1. You've been released CodePush bundle update using version of CodePush CLI that is not support code signing.\n" +
-                        "2. You've been released CodePush bundle update without providing --privateKeyPath option.";
-                    installError && installError(new Error(errorMessage));
-                }
-            }
-            else {
-                if (isSignatureAppearedInBundle) {
-                    CodePushUtil.logMessage("Warning! JWT signature exists in codepush update but code integrity check couldn't be performed because there is no public key configured. " +
-                        "Please ensure that public key is properly configured within your application.");
-                    _this.verifyHash(deployDir, _this.packageHash, verificationFail, successCallback);
-                }
-                else {
-                    if (deploymentResult.isDiffUpdate) {
-                        _this.verifyHash(deployDir, _this.packageHash, verificationFail, successCallback);
-                    }
-                    else {
-                        successCallback();
-                    }
-                }
-            }
-        };
-        if (deploymentResult.isDiffUpdate) {
-            CodePushUtil.logMessage("Applying diff update");
-        }
-        else {
-            CodePushUtil.logMessage("Applying full update");
-        }
-        var isSignatureVerificationEnabled, isSignatureAppearedInBundle;
-        var publicKey;
-        this.getPublicKey(function (error, publicKeyResult) {
-            if (error) {
-                installError && installError(new Error("Error reading public key. " + error));
-                return;
-            }
-            publicKey = publicKeyResult;
-            isSignatureVerificationEnabled = !!publicKey;
-            _this.getSignatureFromUpdate(deploymentResult.deployDir, function (error, signature) {
-                if (error) {
-                    installError && installError(new Error("Error reading signature from update. " + error));
-                    return;
-                }
-                isSignatureAppearedInBundle = !!signature;
-                verify(isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature);
-            });
-        });
+        successCallback();
     };
     LocalPackage.prototype.getPublicKey = function (callback) {
         var success = function (publicKey) {
@@ -232,14 +173,20 @@ var LocalPackage = (function (_super) {
                             var installModeToUse = _this.isMandatory ? installOptions.mandatoryInstallMode : installOptions.installMode;
                             if (installModeToUse === InstallMode.IMMEDIATE) {
                                 installSuccess && installSuccess(installModeToUse);
-                                cordova.exec(function () { }, function () { }, "CodePush", "install", [
+                                cordova.exec(function () {
+                                }, function () {
+                                }, "CodePush", "install", [
                                     deployDir.fullPath,
                                     installModeToUse.toString(),
                                     installOptions.minimumBackgroundDuration.toString()
                                 ]);
                             }
                             else {
-                                cordova.exec(function () { installSuccess && installSuccess(installModeToUse); }, function () { installError && installError(); }, "CodePush", "install", [
+                                cordova.exec(function () {
+                                    installSuccess && installSuccess(installModeToUse);
+                                }, function () {
+                                    installError && installError();
+                                }, "CodePush", "install", [
                                     deployDir.fullPath,
                                     installModeToUse.toString(),
                                     installOptions.minimumBackgroundDuration.toString()
@@ -299,20 +246,37 @@ var LocalPackage = (function (_super) {
         });
     };
     LocalPackage.handleCleanDeployment = function (newPackageLocation, cleanDeployCallback) {
+        var _this = this;
         FileUtil.getDataDirectory(newPackageLocation, true, function (deployDirError, deployDir) {
             FileUtil.getDataDirectory(LocalPackage.DownloadUnzipDir, false, function (unzipDirErr, unzipDir) {
                 if (unzipDirErr || deployDirError) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 }
                 else {
-                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [], function (copyError) {
-                        if (copyError) {
-                            cleanDeployCallback(copyError, null);
-                        }
-                        else {
-                            cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
-                        }
-                    });
+                    var success = function (currentPackageDirectory) {
+                        var newDeployDirectoryPath = LocalPackage.VersionsDir + "/" + deployDir.name + "/www";
+                        FileUtil.getDataDirectory(newDeployDirectoryPath, true, function (error, copyTo) {
+                            if (error) {
+                                cleanDeployCallback(new Error("Could not copy new package: " + error.message), null);
+                            }
+                            else {
+                                FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], function (copyError1) {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, copyTo, [], function (copyError2) {
+                                        if (copyError2) {
+                                            cleanDeployCallback(copyError2, null);
+                                        }
+                                        else {
+                                            cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
+                                        }
+                                    });
+                                }, _this.AdditionalFilesToCopy);
+                            }
+                        });
+                    };
+                    var fail = function (fileSystemError) {
+                        cleanDeployCallback(new Error("Could not copy new package: " + fileSystemError.message), null);
+                    };
+                    FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
                 }
             });
         });
@@ -519,6 +483,7 @@ var LocalPackage = (function (_super) {
     LocalPackage.PackageInfoFile = "currentPackage.json";
     LocalPackage.OldPackageInfoFile = "oldPackage.json";
     LocalPackage.DiffManifestFile = "hotcodepush.json";
+    LocalPackage.AdditionalFilesToCopy = ["config.js", "cordova.js", "cordova_plugins.js", "plugins"];
     return LocalPackage;
 }(Package));
 module.exports = LocalPackage;

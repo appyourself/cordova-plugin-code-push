@@ -30,6 +30,8 @@ class LocalPackage extends Package implements ILocalPackage {
 
     private static DefaultInstallOptions: InstallOptions;
 
+    private static AdditionalFilesToCopy: string[] = ["config.js", "cordova.js", "cordova_plugins.js", "plugins"];
+
     /**
      * The local storage path where this package is located.
      */
@@ -115,76 +117,8 @@ class LocalPackage extends Package implements ILocalPackage {
     }
 
     private verifyPackage(deploymentResult: DeploymentResult, installError: ErrorCallback, successCallback: SuccessCallback<void>): void {
-
-        var deployDir = deploymentResult.deployDir;
-
-        var verificationFail: ErrorCallback = (error: Error) => {
-            installError && installError(error);
-        };
-
-        var verify = (isSignatureVerificationEnabled: boolean, isSignatureAppearedInBundle: boolean, publicKey: string, signature: string) => {
-            if (isSignatureVerificationEnabled) {
-                if (isSignatureAppearedInBundle) {
-                    this.verifyHash(deployDir, this.packageHash, verificationFail, () => {
-                        this.verifySignature(deployDir, this.packageHash, publicKey, signature, verificationFail, successCallback);
-                    });
-                } else {
-                    var errorMessage =
-                        "Error! Public key was provided but there is no JWT signature within app bundle to verify. " +
-                        "Possible reasons, why that might happen: \n" +
-                        "1. You've been released CodePush bundle update using version of CodePush CLI that is not support code signing.\n" +
-                        "2. You've been released CodePush bundle update without providing --privateKeyPath option.";
-                    installError && installError(new Error(errorMessage));
-                }
-            } else {
-                if (isSignatureAppearedInBundle) {
-                    CodePushUtil.logMessage(
-                        "Warning! JWT signature exists in codepush update but code integrity check couldn't be performed because there is no public key configured. " +
-                        "Please ensure that public key is properly configured within your application."
-                    );
-
-                    // verifyHash
-                    this.verifyHash(deployDir, this.packageHash, verificationFail, successCallback);
-                } else {
-                    if (deploymentResult.isDiffUpdate) {
-                        // verifyHash
-                        this.verifyHash(deployDir, this.packageHash, verificationFail, successCallback);
-                    } else {
-                        successCallback();
-                    }
-                }
-            }
-        };
-
-        if (deploymentResult.isDiffUpdate) {
-            CodePushUtil.logMessage("Applying diff update");
-        } else {
-            CodePushUtil.logMessage("Applying full update");
-        }
-
-        var isSignatureVerificationEnabled: boolean, isSignatureAppearedInBundle: boolean;
-        var publicKey: string;
-
-        this.getPublicKey((error, publicKeyResult) => {
-            if (error) {
-                installError && installError(new Error("Error reading public key. " + error));
-                return;
-            }
-
-            publicKey = publicKeyResult;
-            isSignatureVerificationEnabled = !!publicKey;
-
-            this.getSignatureFromUpdate(deploymentResult.deployDir, (error, signature) => {
-                if (error) {
-                    installError && installError(new Error("Error reading signature from update. " + error));
-                    return;
-                }
-
-                isSignatureAppearedInBundle = !!signature;
-
-                verify(isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature);
-            });
-        });
+        /* We don't have checksum so we don't verify package */
+        successCallback();
     }
 
     private getPublicKey(callback: Callback<string>) {
@@ -285,7 +219,9 @@ class LocalPackage extends Package implements ILocalPackage {
                                 /* invoke success before navigating */
                                 installSuccess && installSuccess(installModeToUse);
                                 /* no need for callbacks, the javascript context will reload */
-                                cordova.exec(() => { }, () => { }, "CodePush", "install",
+                                cordova.exec(() => {
+                                    }, () => {
+                                    }, "CodePush", "install",
                                     [
                                         deployDir.fullPath,
                                         installModeToUse.toString(),
@@ -293,8 +229,12 @@ class LocalPackage extends Package implements ILocalPackage {
                                     ]
                                 );
                             } else {
-                                cordova.exec(() => { installSuccess && installSuccess(installModeToUse); },
-                                    () => { installError && installError(); }, "CodePush", "install",
+                                cordova.exec(() => {
+                                        installSuccess && installSuccess(installModeToUse);
+                                    },
+                                    () => {
+                                        installError && installError();
+                                    }, "CodePush", "install",
                                     [
                                         deployDir.fullPath,
                                         installModeToUse.toString(),
@@ -330,7 +270,7 @@ class LocalPackage extends Package implements ILocalPackage {
                     LocalPackage.handleDiffDeployment(newPackageLocation, diffManifest, deployCallback);
                 } else {
                     LocalPackage.handleCleanDeployment(newPackageLocation, (error: Error) => {
-                        deployCallback(error, { deployDir, isDiffUpdate: false });
+                        deployCallback(error, {deployDir, isDiffUpdate: false});
                     });
                 }
             });
@@ -370,13 +310,35 @@ class LocalPackage extends Package implements ILocalPackage {
                 if (unzipDirErr || deployDirError) {
                     cleanDeployCallback(new Error("Could not copy new package."), null);
                 } else {
-                    FileUtil.copyDirectoryEntriesTo(unzipDir, deployDir, [/*no need to ignore copy anything*/], (copyError: Error) => {
-                        if (copyError) {
-                            cleanDeployCallback(copyError, null);
-                        } else {
-                            cleanDeployCallback(null, { deployDir, isDiffUpdate: false });
-                        }
-                    });
+
+                    var success = (currentPackageDirectory: DirectoryEntry) => {
+                        var newDeployDirectoryPath = LocalPackage.VersionsDir + "/" + deployDir.name + "/www";
+
+                        FileUtil.getDataDirectory(newDeployDirectoryPath, true, (error, copyTo) => {
+                            if (error) {
+                                cleanDeployCallback(new Error("Could not copy new package: " + error.message), null);
+                            }
+                            else{
+                                FileUtil.copyDirectoryEntriesTo(currentPackageDirectory, copyTo, [], (copyError1) => {
+                                    FileUtil.copyDirectoryEntriesTo(unzipDir, copyTo, [/*no need to ignore copy anything*/], (copyError2) => {
+                                        if (copyError2) {
+                                            cleanDeployCallback(copyError2, null);
+                                        } else {
+                                            cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
+                                        }
+                                    });
+                                }, this.AdditionalFilesToCopy);
+                            }
+
+                        });
+                    };
+
+
+                    var fail = (fileSystemError: Error) => {
+                        cleanDeployCallback(new Error("Could not copy new package: "  + fileSystemError.message), null);
+                    };
+
+                    FileUtil.getApplicationDirectory("www", CodePushUtil.getNodeStyleCallbackFor(success, fail));
                 }
             });
         });
@@ -449,7 +411,7 @@ class LocalPackage extends Package implements ILocalPackage {
                                 if (deleteError || deployDirError) {
                                     handleError(new Error("Cannot clean up deleted manifest files."));
                                 } else {
-                                    diffCallback(null, { deployDir, isDiffUpdate: true });
+                                    diffCallback(null, {deployDir, isDiffUpdate: true});
                                 }
                             });
                         });
@@ -460,10 +422,10 @@ class LocalPackage extends Package implements ILocalPackage {
     }
 
     /**
-    * Writes the given local package information to the current package information file.
-    * @param packageInfoMetadata The object to serialize.
-    * @param callback In case of an error, this function will be called with the error as the fist parameter.
-    */
+     * Writes the given local package information to the current package information file.
+     * @param packageInfoMetadata The object to serialize.
+     * @param callback In case of an error, this function will be called with the error as the fist parameter.
+     */
     public static writeCurrentPackageInformation(packageInfoMetadata: IPackageInfoMetadata, callback: Callback<void>): void {
         var content = JSON.stringify(packageInfoMetadata);
         FileUtil.writeStringToDataFile(content, LocalPackage.RootDir, LocalPackage.PackageInfoFile, true, callback);
