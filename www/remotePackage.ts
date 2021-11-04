@@ -68,23 +68,18 @@ class RemotePackage extends Package implements IRemotePackage {
                     this.isDownloading = false;
 
                     fileEntry.file((file: File) => {
-
-                      //  NativeAppInfo.isFailedUpdate(this.packageHash, (installFailed: boolean) => {
                             var localPackage = new LocalPackage();
-                            // localPackage.deploymentKey = this.deploymentKey;
                             localPackage.description = this.description;
                             localPackage.label = this.label;
                             localPackage.appVersion = this.appVersion;
                             localPackage.isMandatory = this.isMandatory;
                             localPackage.packageHash = this.packageHash;
                             localPackage.isFirstRun = false;
-                            localPackage.failedInstall = false; // AI
+                            localPackage.failedInstall = false;
                             localPackage.localPath = fileEntry.toInternalURL();
 
                             CodePushUtil.logMessage("Package download success: " + JSON.stringify(localPackage));
                             successCallback && successCallback(localPackage);
-                            // AI Sdk.reportStatusDownload(localPackage, localPackage.deploymentKey);
-                       // });
                     }, fileError => onFileError(fileError, "READ_FILE"));
                 };
 

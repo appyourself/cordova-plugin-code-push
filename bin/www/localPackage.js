@@ -246,6 +246,7 @@ var LocalPackage = (function (_super) {
         });
     };
     LocalPackage.handleCleanDeployment = function (newPackageLocation, cleanDeployCallback) {
+        var _this = this;
         FileUtil.getDataDirectory(newPackageLocation, true, function (deployDirError, deployDir) {
             FileUtil.getDataDirectory(LocalPackage.DownloadUnzipDir, false, function (unzipDirErr, unzipDir) {
                 if (unzipDirErr || deployDirError) {
@@ -268,7 +269,7 @@ var LocalPackage = (function (_super) {
                                             cleanDeployCallback(null, { deployDir: deployDir, isDiffUpdate: false });
                                         }
                                     });
-                                }, ["config.js", "cordova.js", "cordova_plugins.js", "plugins"]);
+                                }, _this.AdditionalFilesToCopy);
                             }
                         });
                     };
@@ -482,6 +483,7 @@ var LocalPackage = (function (_super) {
     LocalPackage.PackageInfoFile = "currentPackage.json";
     LocalPackage.OldPackageInfoFile = "oldPackage.json";
     LocalPackage.DiffManifestFile = "hotcodepush.json";
+    LocalPackage.AdditionalFilesToCopy = ["config.js", "cordova.js", "cordova_plugins.js", "plugins"];
     return LocalPackage;
 }(Package));
 module.exports = LocalPackage;

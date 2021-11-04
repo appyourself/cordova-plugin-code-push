@@ -30,6 +30,8 @@ class LocalPackage extends Package implements ILocalPackage {
 
     private static DefaultInstallOptions: InstallOptions;
 
+    private static AdditionalFilesToCopy: string[] = ["config.js", "cordova.js", "cordova_plugins.js", "plugins"];
+
     /**
      * The local storage path where this package is located.
      */
@@ -115,78 +117,8 @@ class LocalPackage extends Package implements ILocalPackage {
     }
 
     private verifyPackage(deploymentResult: DeploymentResult, installError: ErrorCallback, successCallback: SuccessCallback<void>): void {
+        /* We don't have checksum so we don't verify package */
         successCallback();
-        /*var deployDir = deploymentResult.deployDir;
-
-        var verificationFail: ErrorCallback = (error: Error) => {
-            installError && installError(error);
-        };
-
-        var verify = (isSignatureVerificationEnabled: boolean, isSignatureAppearedInBundle: boolean, publicKey: string, signature: string) => {
-            successCallback();
-
-            if (isSignatureVerificationEnabled) {
-                if (isSignatureAppearedInBundle) {
-                    this.verifyHash(deployDir, this.packageHash, verificationFail, () => {
-                        this.verifySignature(deployDir, this.packageHash, publicKey, signature, verificationFail, successCallback);
-                    });
-                } else {
-                    var errorMessage =
-                        "Error! Public key was provided but there is no JWT signature within app bundle to verify. " +
-                        "Possible reasons, why that might happen: \n" +
-                        "1. You've been released CodePush bundle update using version of CodePush CLI that is not support code signing.\n" +
-                        "2. You've been released CodePush bundle update without providing --privateKeyPath option.";
-                    installError && installError(new Error(errorMessage));
-                }
-            } else {
-                if (isSignatureAppearedInBundle) {
-                    CodePushUtil.logMessage(
-                        "Warning! JWT signature exists in codepush update but code integrity check couldn't be performed because there is no public key configured. " +
-                        "Please ensure that public key is properly configured within your application."
-                    );
-
-                    // verifyHash
-                    this.verifyHash(deployDir, this.packageHash, verificationFail, successCallback);
-                } else {
-                    if (deploymentResult.isDiffUpdate) {
-                        // verifyHash
-                        this.verifyHash(deployDir, this.packageHash, verificationFail, successCallback);
-                    } else {
-                        successCallback();
-                    }
-                }
-            }
-        };
-
-        if (deploymentResult.isDiffUpdate) {
-            CodePushUtil.logMessage("Applying diff update");
-        } else {
-            CodePushUtil.logMessage("Applying full update");
-        }
-
-        var isSignatureVerificationEnabled: boolean, isSignatureAppearedInBundle: boolean;
-        var publicKey: string;
-
-        this.getPublicKey((error, publicKeyResult) => {
-            if (error) {
-                installError && installError(new Error("Error reading public key. " + error));
-                return;
-            }
-
-            publicKey = publicKeyResult;
-            isSignatureVerificationEnabled = !!publicKey;
-
-            this.getSignatureFromUpdate(deploymentResult.deployDir, (error, signature) => {
-                if (error) {
-                    installError && installError(new Error("Error reading signature from update. " + error));
-                    return;
-                }
-
-                isSignatureAppearedInBundle = !!signature;
-
-                verify(isSignatureVerificationEnabled, isSignatureAppearedInBundle, publicKey, signature);
-            });
-        });*/
     }
 
     private getPublicKey(callback: Callback<string>) {
@@ -395,7 +327,7 @@ class LocalPackage extends Package implements ILocalPackage {
                                             cleanDeployCallback(null, {deployDir, isDiffUpdate: false});
                                         }
                                     });
-                                }, ["config.js", "cordova.js", "cordova_plugins.js", "plugins"]);
+                                }, this.AdditionalFilesToCopy);
                             }
 
                         });

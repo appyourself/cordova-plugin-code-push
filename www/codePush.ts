@@ -62,54 +62,9 @@ class CodePush implements CodePushCordovaPlugin {
      * !!! This function is called from the native side, please make changes accordingly. !!!
      */
     public reportStatus(status: number, label: string, appVersion: string, deploymentKey: string, previousLabelOrAppVersion?: string, previousDeploymentKey?: string) {
-       if (((!label && appVersion === previousLabelOrAppVersion) || label === previousLabelOrAppVersion)
-           && deploymentKey === previousDeploymentKey) {
-           // No-op since the new appVersion and label is exactly the same as the previous
-           // (the app might have been updated via a direct or HockeyApp deployment).
-           return;
-       }
-
-       var createPackageForReporting = (label: string, appVersion: string): IPackage => {
-            return {
-                /* The SDK only reports the label and appVersion.
-                   The rest of the properties are added for type safety. */
-                label, appVersion, deploymentKey,
-                description: null, isMandatory: false,
-                packageHash: null, packageSize: null,
-                failedInstall: false
-            };
-        };
-
-        var reportDone = (error: Error) => {
-            var reportArgs = {
-                status,
-                label,
-                appVersion,
-                deploymentKey,
-                previousLabelOrAppVersion,
-                previousDeploymentKey
-            };
-
-            if (error) {
-                CodePushUtil.logError(`An error occurred while reporting status: ${JSON.stringify(reportArgs)}`, error);
-                cordova.exec(null, null, "CodePush", "reportFailed", [reportArgs]);
-            } else {
-                CodePushUtil.logMessage(`Reported status: ${JSON.stringify(reportArgs)}`);
-                cordova.exec(null, null, "CodePush", "reportSucceeded", [reportArgs]);
-            }
-        };
-
-        switch (status) {
-            case ReportStatus.STORE_VERSION:
-                Sdk.reportStatusDeploy(null, AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_CONFIRMED:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_ROLLED_BACK:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentFailed, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-        }
+        /*
+        We don't use server.
+        */
     }
 
     /**

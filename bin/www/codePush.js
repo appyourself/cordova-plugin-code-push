@@ -12,7 +12,6 @@ var LocalPackage = require("./localPackage");
 var RemotePackage = require("./remotePackage");
 var CodePushUtil = require("./codePushUtil");
 var NativeAppInfo = require("./nativeAppInfo");
-var Sdk = require("./sdk");
 var SyncStatus = require("./syncStatus");
 var CodePush = (function () {
     function CodePush() {
@@ -24,47 +23,6 @@ var CodePush = (function () {
         cordova.exec(installSuccess, errorCallback, "CodePush", "restartApplication", []);
     };
     CodePush.prototype.reportStatus = function (status, label, appVersion, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey) {
-        if (((!label && appVersion === previousLabelOrAppVersion) || label === previousLabelOrAppVersion)
-            && deploymentKey === previousDeploymentKey) {
-            return;
-        }
-        var createPackageForReporting = function (label, appVersion) {
-            return {
-                label: label, appVersion: appVersion, deploymentKey: deploymentKey,
-                description: null, isMandatory: false,
-                packageHash: null, packageSize: null,
-                failedInstall: false
-            };
-        };
-        var reportDone = function (error) {
-            var reportArgs = {
-                status: status,
-                label: label,
-                appVersion: appVersion,
-                deploymentKey: deploymentKey,
-                previousLabelOrAppVersion: previousLabelOrAppVersion,
-                previousDeploymentKey: previousDeploymentKey
-            };
-            if (error) {
-                CodePushUtil.logError("An error occurred while reporting status: " + JSON.stringify(reportArgs), error);
-                cordova.exec(null, null, "CodePush", "reportFailed", [reportArgs]);
-            }
-            else {
-                CodePushUtil.logMessage("Reported status: " + JSON.stringify(reportArgs));
-                cordova.exec(null, null, "CodePush", "reportSucceeded", [reportArgs]);
-            }
-        };
-        switch (status) {
-            case ReportStatus.STORE_VERSION:
-                Sdk.reportStatusDeploy(null, AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_CONFIRMED:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentSucceeded, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-            case ReportStatus.UPDATE_ROLLED_BACK:
-                Sdk.reportStatusDeploy(createPackageForReporting(label, appVersion), AcquisitionStatus.DeploymentFailed, deploymentKey, previousLabelOrAppVersion, previousDeploymentKey, reportDone);
-                break;
-        }
     };
     CodePush.prototype.getCurrentPackage = function (packageSuccess, packageError) {
         NativeAppInfo.isPendingUpdate(function (pendingUpdate) {
