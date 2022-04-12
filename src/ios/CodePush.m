@@ -139,37 +139,6 @@ StatusReport* rollbackStatusReport = nil;
 
 - (void)notifyApplicationReady:(CDVInvokedUrlCommand *)command {
     [self.commandDelegate runInBackground:^{
-        if ([CodePushPackageManager isBinaryFirstRun]) {
-            // Report first run of a binary version app
-            [CodePushPackageManager markBinaryFirstRunFlag];
-            NSString* appVersion = [Utilities getApplicationVersion];
-            NSString* deploymentKey = ((CDVViewController *)self.viewController).settings[DeploymentKeyPreference];
-            StatusReport* statusReport = [[StatusReport alloc] initWithStatus:STORE_VERSION
-                                                                     andLabel:nil
-                                                                andAppVersion:appVersion
-                                                             andDeploymentKey:deploymentKey];
-            [CodePushReportingManager reportStatus:statusReport
-                                       withWebView:self.webView];
-        } else if ([CodePushPackageManager installNeedsConfirmation]) {
-            // Report CodePush update installation that has not been confirmed yet
-            CodePushPackageMetadata* currentMetadata = [CodePushPackageManager getCurrentPackageMetadata];
-            StatusReport* statusReport = [[StatusReport alloc] initWithStatus:UPDATE_CONFIRMED
-                                                                     andLabel:currentMetadata.label
-                                                                andAppVersion:currentMetadata.appVersion
-                                                             andDeploymentKey:currentMetadata.deploymentKey];
-            [CodePushReportingManager reportStatus:statusReport
-                                    withWebView:self.webView];
-        } else if (rollbackStatusReport) {
-            // Report a CodePush update that rolled back
-            [CodePushReportingManager reportStatus:rollbackStatusReport
-                                       withWebView:self.webView];
-            rollbackStatusReport = nil;
-        } else if ([CodePushReportingManager hasFailedReport]) {
-            // Previous status report failed, so try it again
-            [CodePushReportingManager reportStatus:[CodePushReportingManager getAndClearFailedReport]
-                                       withWebView:self.webView];
-        }
-
         // Mark the update as confirmed and not requiring a rollback
         [CodePushPackageManager clearInstallNeedsConfirmation];
         [CodePushPackageManager cleanOldPackage];

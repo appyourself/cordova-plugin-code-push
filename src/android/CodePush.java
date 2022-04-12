@@ -226,29 +226,6 @@ public class CodePush extends CordovaPlugin {
     }
 
     private boolean execNotifyApplicationReady(CallbackContext callbackContext) {
-        if (this.codePushPackageManager.isBinaryFirstRun()) {
-            // Report first run of a binary version app
-            this.codePushPackageManager.saveBinaryFirstRunFlag();
-            try {
-                String appVersion = Utilities.getAppVersionName(cordova.getActivity());
-                codePushReportingManager.reportStatus(new StatusReport(ReportingStatus.STORE_VERSION, null, appVersion, mainWebView.getPreferences().getString(DEPLOYMENT_KEY_PREFERENCE, null)), this.mainWebView);
-            } catch (PackageManager.NameNotFoundException e) {
-                // Should not happen unless the appVersion is not specified, in which case we can't report anything anyway.
-                e.printStackTrace();
-            }
-        } else if (this.codePushPackageManager.installNeedsConfirmation()) {
-            // Report CodePush update installation that has not been confirmed yet
-            CodePushPackageMetadata currentMetadata = this.codePushPackageManager.getCurrentPackageMetadata();
-            codePushReportingManager.reportStatus(new StatusReport(ReportingStatus.UPDATE_CONFIRMED, currentMetadata.label, currentMetadata.appVersion, currentMetadata.deploymentKey), this.mainWebView);
-        } else if (rollbackStatusReport != null) {
-            // Report a CodePush update that has been rolled back
-            codePushReportingManager.reportStatus(rollbackStatusReport, this.mainWebView);
-            rollbackStatusReport = null;
-        } else if (codePushReportingManager.hasFailedReport()) {
-            // Previous status report failed, so try it again
-            codePushReportingManager.reportStatus(codePushReportingManager.getAndClearFailedReport(), this.mainWebView);
-        }
-
         // Mark the update as confirmed and not requiring a rollback
         this.codePushPackageManager.clearInstallNeedsConfirmation();
         this.cleanOldPackageSilently();
