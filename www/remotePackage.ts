@@ -58,7 +58,7 @@ class RemotePackage extends Package implements IRemotePackage {
                 this.isDownloading = true;
 
                 const onFileError: FileSaverErrorHandler = (fileError: FileError, stage: string) => {
-                    const error = new Error("Could not access local package. Stage:" + stage + "Error code: " + fileError.code);
+                    const error = new Error("Could not access local package. Stage:" + stage + "Error code: " + fileError.error);
                     CodePushUtil.invokeErrorCallback(error, errorCallback);
                     CodePushUtil.logMessage(stage + ":" + fileError);
                     this.isDownloading = false;
