@@ -48,7 +48,7 @@ var RemotePackage = (function (_super) {
             else {
                 this.isDownloading = true;
                 var onFileError_1 = function (fileError, stage) {
-                    var error = new Error("Could not access local package. Stage:" + stage + "Error code: " + fileError.code);
+                    var error = new Error("Could not access local package. Stage:" + stage + "Error code: " + fileError.error);
                     CodePushUtil.invokeErrorCallback(error, errorCallback);
                     CodePushUtil.logMessage(stage + ":" + fileError);
                     _this.isDownloading = false;
