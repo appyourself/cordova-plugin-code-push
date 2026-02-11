@@ -1,4 +1,5 @@
 #import "InstallOptions.h"
+#import <Foundation/Foundation.h>
 
 @implementation InstallOptions
 

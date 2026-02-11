@@ -1,4 +1,5 @@
 #import "StatusReport.h"
+#import <Foundation/Foundation.h>
 
 @implementation StatusReport
 
