@@ -2,6 +2,7 @@
 #import <Cordova/CDVConfigParser.h>
 #import <Cordova/CDVWebViewEngineProtocol.h>
 #import <Cordova/NSDictionary+CordovaPreferences.h>
+#import <WebKit/WebKit.h>
 #import "CodePush.h"
 #import "CodePushPackageMetadata.h"
 #import "CodePushPackageManager.h"
@@ -212,6 +213,8 @@ StatusReport* rollbackStatusReport = nil;
         [self loadPackage: deployedPackageMetadata.localPath];
         InstallOptions* pendingInstall = [CodePushPackageManager getPendingInstall];
         if (pendingInstall) {
+            NSLog(@"[CodePush Debug] restartApplication: %@", [self getStartPageURLForLocalPackage:deployedPackageMetadata.localPath]);
+
             [self markUpdate];
             [CodePushPackageManager clearPendingInstall];
         }
@@ -379,7 +382,12 @@ StatusReport* rollbackStatusReport = nil;
 #endif
     if([Utilities CDVWebViewEngineAvailable] || !useUiWebView)
     {
-        [self.webViewEngine loadRequest:[NSURLRequest requestWithURL:url]];
+        NSURL *readAccessURL = [url URLByDeletingLastPathComponent];
+        if ([self.webViewEngine.engineWebView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
+            [(WKWebView*)self.webViewEngine.engineWebView loadFileURL:url allowingReadAccessToURL:readAccessURL];
+        } else {
+            [self.webViewEngine loadRequest:[NSURLRequest requestWithURL:url]];
+        }
     } else {
         CPLog(@"Current version of CodePush plugin doesn't support UIWebView anymore. Please consider using version of the plugin below v2.0.0 or migrating to WkWebView. For more info please see https://developer.apple.com/news/?id=12232019b.");
     }
@@ -441,22 +449,43 @@ StatusReport* rollbackStatusReport = nil;
 }
 
 - (NSURL *)getStartPageURLForLocalPackage:(NSString*)packageLocation {
-    if (packageLocation) {
-        NSString* startPage = [self getConfigLaunchUrl];
-        NSString* libraryLocation = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSArray* realLocationArray = @[libraryLocation, @"NoCloud", packageLocation, @"www", startPage];
-        NSString* realStartPageLocation = [NSString pathWithComponents:realLocationArray];
-        if ([[NSFileManager defaultManager] fileExistsAtPath:realStartPageLocation]) {
-            // Fixes WKWebView unable to load start page from CodePush update directory
-            NSString* scheme = [self getAppScheme];
-            if ([Utilities CDVWebViewEngineAvailable] && ([realStartPageLocation hasPrefix:@"/_app_file_"] == NO) && !([scheme isEqualToString: @"file"] || scheme == nil)) {
-                realStartPageLocation = [@"/_app_file_" stringByAppendingString:realStartPageLocation];
-            }
-            return [NSURL fileURLWithPath:realStartPageLocation];
-        }
+
+    NSLog(@"[CodePush Debug] getStartPageURLForLocalPackage: %@", packageLocation);
+
+    if (!packageLocation) {
+        return nil;
     }
 
-    return nil;
+    NSString *startPage = [self getConfigLaunchUrl]; // np. index.html
+
+    NSString *libraryLocation =
+        NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject;
+
+    if ([packageLocation hasPrefix:@"/"]) {
+        packageLocation = [packageLocation substringFromIndex:1];
+    }
+
+    NSString *realPath =
+        [libraryLocation stringByAppendingPathComponent:
+         [NSString stringWithFormat:@"NoCloud/%@/www/%@", packageLocation, startPage]];
+
+    NSLog(@"[CodePush Debug] Real path: %@", realPath);
+
+    BOOL isDirectory = NO;
+    BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:realPath isDirectory:&isDirectory];
+
+    if (!exists || isDirectory) {
+        NSLog(@"[CodePush Debug] File not found: %@", realPath);
+        return nil;
+    }
+
+    NSURL *fileURL = [NSURL fileURLWithPath:realPath];
+
+    NSLog(@"[CodePush Debug] Final URL: %@", fileURL);
+    NSString *libraryPath =
+           NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject;
+
+    return fileURL;
 }
 
 - (void)redirectStartPageToURL:(NSString*)packageLocation{
