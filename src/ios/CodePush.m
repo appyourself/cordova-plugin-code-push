@@ -449,43 +449,22 @@ StatusReport* rollbackStatusReport = nil;
 }
 
 - (NSURL *)getStartPageURLForLocalPackage:(NSString*)packageLocation {
-
-    NSLog(@"[CodePush Debug] getStartPageURLForLocalPackage: %@", packageLocation);
-
-    if (!packageLocation) {
-        return nil;
+    if (packageLocation) {
+        NSString* startPage = [self getConfigLaunchUrl];
+        NSString* libraryLocation = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSArray* realLocationArray = @[libraryLocation, @"NoCloud", packageLocation, @"www", startPage];
+        NSString* realStartPageLocation = [NSString pathWithComponents:realLocationArray];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:realStartPageLocation]) {
+            // Fixes WKWebView unable to load start page from CodePush update directory
+            NSString* scheme = [self getAppScheme];
+            if ([Utilities CDVWebViewEngineAvailable] && ([realStartPageLocation hasPrefix:@"/_app_file_"] == NO) && !([scheme isEqualToString: @"file"] || scheme == nil)) {
+                realStartPageLocation = [@"/_app_file_" stringByAppendingString:realStartPageLocation];
+            }
+            return [NSURL fileURLWithPath:realStartPageLocation];
+        }
     }
 
-    NSString *startPage = [self getConfigLaunchUrl]; // np. index.html
-
-    NSString *libraryLocation =
-        NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject;
-
-    if ([packageLocation hasPrefix:@"/"]) {
-        packageLocation = [packageLocation substringFromIndex:1];
-    }
-
-    NSString *realPath =
-        [libraryLocation stringByAppendingPathComponent:
-         [NSString stringWithFormat:@"NoCloud/%@/www/%@", packageLocation, startPage]];
-
-    NSLog(@"[CodePush Debug] Real path: %@", realPath);
-
-    BOOL isDirectory = NO;
-    BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:realPath isDirectory:&isDirectory];
-
-    if (!exists || isDirectory) {
-        NSLog(@"[CodePush Debug] File not found: %@", realPath);
-        return nil;
-    }
-
-    NSURL *fileURL = [NSURL fileURLWithPath:realPath];
-
-    NSLog(@"[CodePush Debug] Final URL: %@", fileURL);
-    NSString *libraryPath =
-           NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject;
-
-    return fileURL;
+    return nil;
 }
 
 - (void)redirectStartPageToURL:(NSString*)packageLocation{
