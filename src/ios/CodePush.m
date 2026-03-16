@@ -382,12 +382,7 @@ StatusReport* rollbackStatusReport = nil;
 #endif
     if([Utilities CDVWebViewEngineAvailable] || !useUiWebView)
     {
-        NSURL *readAccessURL = [url URLByDeletingLastPathComponent];
-        if ([self.webViewEngine.engineWebView respondsToSelector:@selector(loadFileURL:allowingReadAccessToURL:)]) {
-            [(WKWebView*)self.webViewEngine.engineWebView loadFileURL:url allowingReadAccessToURL:readAccessURL];
-        } else {
-            [self.webViewEngine loadRequest:[NSURLRequest requestWithURL:url]];
-        }
+        [self.webViewEngine loadRequest:[NSURLRequest requestWithURL:url]];
     } else {
         CPLog(@"Current version of CodePush plugin doesn't support UIWebView anymore. Please consider using version of the plugin below v2.0.0 or migrating to WkWebView. For more info please see https://developer.apple.com/news/?id=12232019b.");
     }
