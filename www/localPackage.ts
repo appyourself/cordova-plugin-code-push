@@ -95,7 +95,7 @@ class LocalPackage extends Package implements ILocalPackage {
                             return;
                         }
 
-                        zip.unzip(this.localPath, unzipDir.toInternalURL(), newPackageUnzipped);
+                        zip.unzip(this.localPath, unzipDir.nativeURL, newPackageUnzipped);
 
                     });
                 };

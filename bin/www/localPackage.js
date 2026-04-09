@@ -70,7 +70,7 @@ var LocalPackage = (function (_super) {
                             installError && installError(innerError);
                             return;
                         }
-                        zip.unzip(_this.localPath, unzipDir.toInternalURL(), newPackageUnzipped);
+                        zip.unzip(_this.localPath, unzipDir.nativeURL, newPackageUnzipped);
                     });
                 };
                 if (!error && !!directoryEntry) {
